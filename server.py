@@ -14,7 +14,7 @@ import pickle
 app = FastAPI()
 
 # Charger le modèle au démarrage
-with open(r'C:\Users\Francesco\Documents\FlutterProjects\PREDICTION_Q\assets\model_trot.pkl', 'rb') as f:
+with open("model_trot.pkl", "rb") as f:
     model = pickle.load(f)
 
 # Récupérer tous les hippodromes connus pour l'encodage
