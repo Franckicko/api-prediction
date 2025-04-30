@@ -18,7 +18,7 @@ with open("model_trot.pkl", "rb") as f:
     model = pickle.load(f)
 
 # Récupérer tous les hippodromes connus pour l'encodage
-conn = sqlite3.connect(r'C:\Users\Francesco\Documents\FlutterProjects\PREDICTION_Q\assets\courses.db')
+conn = sqlite3.connect("courses.db")
 df_trot = pd.read_sql_query("SELECT DISTINCT HIPPODROME FROM courses WHERE lower(DISCIPLINE) = 'trot'", conn)
 conn.close()
 hippodromes_list = df_trot['HIPPODROME'].astype(str).apply(lambda x: x.strip().upper()).tolist()
@@ -33,7 +33,7 @@ class PredictionRequest(BaseModel):
 @app.get("/courses")
 def get_courses():
     # Connexion à la base SQLite
-    conn = sqlite3.connect(r'C:\Users\Francesco\Documents\FlutterProjects\PREDICTION_Q\assets\courses.db')
+    conn = sqlite3.connect("courses.db")
     df = pd.read_sql_query("SELECT * FROM courses", conn)
     conn.close()
 
