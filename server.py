@@ -1,10 +1,11 @@
-
 from fastapi import FastAPI
 from pydantic import BaseModel
 import sqlite3
 import pandas as pd
 import numpy as np
 import pickle
+from datetime import datetime
+import csv
 
 app = FastAPI()
 
@@ -50,6 +51,19 @@ def get_courses():
     conn.close()
     return df.to_dict(orient="records")
 
+# Enregistrer historique
+def enregistrer_historique(discipline, hippodrome, nbre_partants, predictions, top_label):
+    try:
+        with open("historique_predictions.csv", "a", newline="", encoding="utf-8") as f:
+            writer = csv.writer(f)
+            date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            writer.writerow([
+                date, discipline, hippodrome, nbre_partants,
+                predictions, top_label, "?", "?"
+            ])
+    except Exception as e:
+        print(f"[Erreur historique] {e}")
+
 # Route : prédiction du 1er cheval TROT (TOP 3)
 @app.post("/predict")
 def predict_course(data: PredictionRequest):
@@ -84,7 +98,9 @@ def predict_course_galop(data: PredictionRequest):
     features = np.array([[hippodrome_to_index_galop[hippo], data.nbre_partants]])
     proba = model_galop_a1.predict_proba(features)[0]
     top3 = proba.argsort()[-3:][::-1]
-    return {"predictions_galop": top3.tolist()}
+    predictions = top3.tolist()
+    enregistrer_historique("galop", hippo, data.nbre_partants, predictions, "Top 3")
+    return {"predictions_galop": predictions}
 
 # Route : prédiction du 2ème cheval GALOP (TOP 4)
 @app.post("/predict_galop_a2")
@@ -96,4 +112,7 @@ def predict_course_galop_second(data: PredictionRequest):
     features = np.array([[hippodrome_to_index_galop[hippo], data.nbre_partants]])
     proba = model_galop_a2.predict_proba(features)[0]
     top4 = proba.argsort()[-4:][::-1]
-    return {"predictions_galop_2eme": top4.tolist()}
+    predictions = top4.tolist()
+    enregistrer_historique("galop", hippo, data.nbre_partants, predictions, "Top 4")
+    return {"predictions_galop_2eme": predictions}
+
